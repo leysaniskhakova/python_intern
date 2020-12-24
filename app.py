@@ -1,9 +1,20 @@
-"""
-app example
+import requests
 
-"""
+from requests.exceptions import ConnectionError
+
+from fastapi import FastAPI
+
+app = FastAPI()
 
 
-def is_alive_host(hostname):
-    """Проверить, что запрашиваемый хост возвращает http status 100<=x<400."""
-    pass
+@app.get("/healthz")
+def is_alive_host(hostname: str):
+    try:
+        response = requests.get('http://' + hostname)
+    except ConnectionError as e:
+        return {'status': 'down'}
+
+    code = response.status_code
+    if 100 <= code < 400:
+        return {'status': 'up'}
+    return {'status': 'down'}
